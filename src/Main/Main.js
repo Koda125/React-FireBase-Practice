@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { db } from "../firebase-config";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, doc, deleteDoc } from "firebase/firestore";
 function Main(){
     const [ users, setUsers ] = useState([]);
     const [ name, setName ] = useState('')
@@ -9,13 +9,19 @@ function Main(){
 
     const createUser = async () => {
         console.log("Adding a new user: ", name, age )
-        await addDoc(usersCollectionRef, {name: name, age: age});
+        await addDoc(usersCollectionRef, {name: name, age: Number(age)});
     }
-    const deleteUser = () => {
+    const deleteUser = async (id) => {
         console.log("Deleting user")
+        const userDoc = doc(db, "users", id)
+        await deleteDoc(userDoc);
+
     }
-    const updateAge = () => {
+    const updateAge = async (id, age ) => {
         console.log('Increasing age by 1')
+        const newFields = { age: age + 1}
+        const userDoc = doc(db, "users", id)
+        await updateDoc( userDoc ,newFields)
     }
 
     useEffect(() => {
@@ -43,8 +49,8 @@ function Main(){
                 <h1>Name: {user.name}</h1>
                 <h1>Age: {user.age} </h1>
                     <div>
-                        <button onClick={deleteUser}>Delete</button>
-                        <button onClick={updateAge} >Increase Age</button>
+                        <button onClick={() => {deleteUser(user.id)}}>Delete</button>
+                        <button onClick={() => {updateAge(user.id, user.age)} }>Increase Age</button>
                     </div>
                 </div>
             )})}
